@@ -1,11 +1,12 @@
 // DLC identifiers
-export type DLC = "base" | "sotv" | "sots" | "ac";
+export type DLC = "base" | "sotv" | "sots" | "ac" | "hc";
 
 export const DLC_NAMES: Record<DLC, string> = {
   base: "Base Game",
   sotv: "Survivors of the Void",
   sots: "Seekers of the Storm",
   ac: "Alloyed Collective",
+  hc: "Hallowed Concepts",
 };
 
 // Challenge categories for organizing the editor

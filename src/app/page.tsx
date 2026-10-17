@@ -141,6 +141,7 @@ export default function Home() {
                       <ProtocolItem label="Void Contamination" code="SOTV" />
                       <ProtocolItem label="Storm Seekers" code="SOTS" />
                       <ProtocolItem label="Alloyed Integration" code="AC" />
+                      <ProtocolItem label="Hallowed Concepts" code="HC" />
                     </div>
                   </motion.div>
                 </div>

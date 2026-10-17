@@ -38,7 +38,7 @@ const categories: (ChallengeCategory | "all")[] = [
   "artifacts",
 ];
 
-const dlcs: (DLC | "all")[] = ["all", "base", "sotv", "sots", "ac"];
+const dlcs: (DLC | "all")[] = ["all", "base", "sotv", "sots", "ac", "hc"];
 
 const containerVariants = {
   hidden: { opacity: 0 },

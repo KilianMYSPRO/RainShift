@@ -164,6 +164,8 @@ function getDLCStyle(dlc: string): string {
       return "border-ror-boss text-ror-boss bg-ror-boss/10"; // Using boss yellow/gold for SOTS
     case "ac":
       return "border-ror-lunar text-ror-lunar bg-ror-lunar/10";
+    case "hc":
+      return "border-ror-legendary text-ror-legendary bg-ror-legendary/10";
     default:
       return "border-ror-border text-ror-text-dim";
   }
@@ -174,6 +176,7 @@ function getDLCShortName(dlc: string): string {
     sotv: "VOID",
     sots: "STORM",
     ac: "ALLOYED",
+    hc: "HALLOWED",
   };
   return names[dlc] || dlc.toUpperCase();
 }
