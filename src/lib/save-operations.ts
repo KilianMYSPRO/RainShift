@@ -116,15 +116,23 @@ export function unlockAll(saveData: SaveData): SaveData {
 }
 
 /**
- * Lock all achievements (reset to default)
+ * Lock all achievements managed by the editor.
+ * Only removes achievements listed in the challenge data and the unlockables
+ * they grant; logbook entries, newt statues, stages and any other unlocks the
+ * game records on its own are preserved.
  */
 export function lockAll(saveData: SaveData): SaveData {
+  const managedAchievements = new Set(challenges.map((c) => c.achievement));
+  const managedUnlocks = new Set(challenges.flatMap((c) => c.unlocks));
+  const keepAchievement = (a: string) => !managedAchievements.has(a);
+  const keepUnlock = (u: string) => !managedUnlocks.has(u);
+
   return {
     ...saveData,
-    achievements: [],
-    unviewedAchievements: [],
-    viewedUnlockables: [],
-    unlocks: [],
+    achievements: saveData.achievements.filter(keepAchievement),
+    unviewedAchievements: saveData.unviewedAchievements.filter(keepAchievement),
+    viewedUnlockables: saveData.viewedUnlockables.filter(keepUnlock),
+    unlocks: saveData.unlocks.filter(keepUnlock),
   };
 }
 
