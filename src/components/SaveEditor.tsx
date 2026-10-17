@@ -68,6 +68,7 @@ export function SaveEditor({
   >("all");
   const [selectedDLC, setSelectedDLC] = useState<DLC | "all">("all");
   const [hasChanges, setHasChanges] = useState(false);
+  const [awardCoins, setAwardCoins] = useState(false);
 
   // Debounce search to prevent animation lag
   useEffect(() => {
@@ -104,16 +105,18 @@ export function SaveEditor({
 
   const handleToggleAchievement = useCallback(
     (achievementId: string, enabled: boolean) => {
-      setSaveData((prev) => toggleAchievement(prev, achievementId, enabled));
+      setSaveData((prev) =>
+        toggleAchievement(prev, achievementId, enabled, { awardCoins }),
+      );
       setHasChanges(true);
     },
-    [],
+    [awardCoins],
   );
 
   const handleUnlockAll = useCallback(() => {
-    setSaveData((prev) => unlockAll(prev));
+    setSaveData((prev) => unlockAll(prev, { awardCoins }));
     setHasChanges(true);
-  }, []);
+  }, [awardCoins]);
 
   const handleLockAll = useCallback(() => {
     setSaveData((prev) => lockAll(prev));
@@ -225,6 +228,16 @@ export function SaveEditor({
                 LOCK ALL
               </motion.button>
             </div>
+
+            <label className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-ror-text-muted cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={awardCoins}
+                onChange={(e) => setAwardCoins(e.target.checked)}
+                className="accent-[var(--ror-lunar)]"
+              />
+              Award lunar coins for unlocks
+            </label>
 
             <div className="h-[1px] bg-ror-border/50 w-full" />
 

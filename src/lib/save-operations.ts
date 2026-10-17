@@ -7,6 +7,8 @@ import {
   serializeXml,
 } from "./xml-parser";
 
+const INT32_MAX = 2147483647;
+
 /**
  * Load and parse a save file from XML string
  */
@@ -37,6 +39,11 @@ export function isAchievementUnlocked(
   achievementId: string,
 ): boolean {
   return saveData.achievements.includes(achievementId);
+}
+
+export interface UnlockOptions {
+  /** Add the lunar coins the game awards for each newly unlocked achievement */
+  awardCoins?: boolean;
 }
 
 const challengeByAchievement = new Map(
@@ -78,17 +85,31 @@ export function withDependents(achievementId: string): string[] {
   return Array.from(result);
 }
 
+/**
+ * Lunar coins the game awards for the given achievements.
+ */
+export function lunarCoinsFor(achievementIds: Iterable<string>): number {
+  let total = 0;
+  for (const id of achievementIds) {
+    total += challengeByAchievement.get(id)?.lunarCoins ?? 0;
+  }
+  return total;
+}
+
 function grant(
   saveData: SaveData,
   ids: string[],
   markUnviewed: boolean,
+  options: UnlockOptions,
 ): SaveData {
   const achievements = new Set(saveData.achievements);
   const unviewedAchievements = new Set(saveData.unviewedAchievements);
   const viewedUnlockables = new Set(saveData.viewedUnlockables);
   const unlocks = new Set(saveData.unlocks);
+  const added: string[] = [];
 
   for (const id of ids) {
+    if (!achievements.has(id)) added.push(id);
     achievements.add(id);
     if (markUnviewed) unviewedAchievements.add(id);
     for (const unlock of challengeByAchievement.get(id)?.unlocks ?? []) {
@@ -97,8 +118,13 @@ function grant(
     }
   }
 
+  const coins = options.awardCoins
+    ? Math.min(saveData.coins + lunarCoinsFor(added), INT32_MAX)
+    : saveData.coins;
+
   return {
     ...saveData,
+    coins,
     achievements: Array.from(achievements),
     unviewedAchievements: Array.from(unviewedAchievements),
     viewedUnlockables: Array.from(viewedUnlockables),
@@ -115,9 +141,10 @@ export function toggleAchievement(
   saveData: SaveData,
   achievementId: string,
   enabled: boolean,
+  options: UnlockOptions = {},
 ): SaveData {
   if (enabled) {
-    return grant(saveData, withPrerequisites(achievementId), true);
+    return grant(saveData, withPrerequisites(achievementId), true, options);
   }
 
   const removed = new Set(withDependents(achievementId));
@@ -142,11 +169,15 @@ export function toggleAchievement(
 /**
  * Unlock all achievements
  */
-export function unlockAll(saveData: SaveData): SaveData {
+export function unlockAll(
+  saveData: SaveData,
+  options: UnlockOptions = {},
+): SaveData {
   const result = grant(
     saveData,
     challenges.map((c) => c.achievement),
     false,
+    options,
   );
   // Clear unviewed since we're bulk unlocking
   return { ...result, unviewedAchievements: [] };
