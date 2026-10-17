@@ -39,44 +39,61 @@ export function isAchievementUnlocked(
   return saveData.achievements.includes(achievementId);
 }
 
+const challengeByAchievement = new Map(
+  challenges.map((c) => [c.achievement, c]),
+);
+
 /**
- * Toggle an achievement (unlock or lock)
+ * Achievement plus every prerequisite it (transitively) requires in-game.
  */
-export function toggleAchievement(
+export function withPrerequisites(achievementId: string): string[] {
+  const chain: string[] = [];
+  let current: string | undefined = achievementId;
+  while (current && !chain.includes(current)) {
+    chain.push(current);
+    current = challengeByAchievement.get(current)?.prerequisite;
+  }
+  return chain;
+}
+
+/**
+ * Achievement plus every achievement that (transitively) requires it.
+ */
+export function withDependents(achievementId: string): string[] {
+  const result = new Set([achievementId]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const c of challenges) {
+      if (
+        c.prerequisite &&
+        result.has(c.prerequisite) &&
+        !result.has(c.achievement)
+      ) {
+        result.add(c.achievement);
+        grew = true;
+      }
+    }
+  }
+  return Array.from(result);
+}
+
+function grant(
   saveData: SaveData,
-  achievementId: string,
-  enabled: boolean,
+  ids: string[],
+  markUnviewed: boolean,
 ): SaveData {
   const achievements = new Set(saveData.achievements);
   const unviewedAchievements = new Set(saveData.unviewedAchievements);
   const viewedUnlockables = new Set(saveData.viewedUnlockables);
   const unlocks = new Set(saveData.unlocks);
 
-  // Find the challenge data to get unlocks
-  const challenge = challenges.find((c) => c.achievement === achievementId);
-
-  if (enabled) {
-    // Add achievement
-    achievements.add(achievementId);
-    // Add to unviewed (game will show notification)
-    unviewedAchievements.add(achievementId);
-    // Add unlocks to viewed unlockables and actual unlocks
-    if (challenge) {
-      for (const unlock of challenge.unlocks) {
-        viewedUnlockables.add(unlock);
-        unlocks.add(unlock);
-      }
-    }
-  } else {
-    // Remove achievement
-    achievements.delete(achievementId);
-    unviewedAchievements.delete(achievementId);
-    // Remove from viewed unlockables and actual unlocks
-    if (challenge) {
-      for (const unlock of challenge.unlocks) {
-        viewedUnlockables.delete(unlock);
-        unlocks.delete(unlock);
-      }
+  for (const id of ids) {
+    achievements.add(id);
+    if (markUnviewed) unviewedAchievements.add(id);
+    for (const unlock of challengeByAchievement.get(id)?.unlocks ?? []) {
+      viewedUnlockables.add(unlock);
+      unlocks.add(unlock);
     }
   }
 
@@ -90,29 +107,49 @@ export function toggleAchievement(
 }
 
 /**
+ * Toggle an achievement (unlock or lock).
+ * Unlocking also unlocks its prerequisites; locking also locks every
+ * achievement that depends on it, matching the game's rules.
+ */
+export function toggleAchievement(
+  saveData: SaveData,
+  achievementId: string,
+  enabled: boolean,
+): SaveData {
+  if (enabled) {
+    return grant(saveData, withPrerequisites(achievementId), true);
+  }
+
+  const removed = new Set(withDependents(achievementId));
+  const removedUnlocks = new Set(
+    Array.from(removed).flatMap(
+      (id) => challengeByAchievement.get(id)?.unlocks ?? [],
+    ),
+  );
+  return {
+    ...saveData,
+    achievements: saveData.achievements.filter((a) => !removed.has(a)),
+    unviewedAchievements: saveData.unviewedAchievements.filter(
+      (a) => !removed.has(a),
+    ),
+    viewedUnlockables: saveData.viewedUnlockables.filter(
+      (u) => !removedUnlocks.has(u),
+    ),
+    unlocks: saveData.unlocks.filter((u) => !removedUnlocks.has(u)),
+  };
+}
+
+/**
  * Unlock all achievements
  */
 export function unlockAll(saveData: SaveData): SaveData {
-  const achievements = new Set(saveData.achievements);
-  const viewedUnlockables = new Set(saveData.viewedUnlockables);
-  const unlocks = new Set(saveData.unlocks);
-
-  // Add all achievements and their unlocks
-  for (const challenge of challenges) {
-    achievements.add(challenge.achievement);
-    for (const unlock of challenge.unlocks) {
-      viewedUnlockables.add(unlock);
-      unlocks.add(unlock);
-    }
-  }
-
-  return {
-    ...saveData,
-    achievements: Array.from(achievements),
-    unviewedAchievements: [], // Clear unviewed since we're bulk unlocking
-    viewedUnlockables: Array.from(viewedUnlockables),
-    unlocks: Array.from(unlocks),
-  };
+  const result = grant(
+    saveData,
+    challenges.map((c) => c.achievement),
+    false,
+  );
+  // Clear unviewed since we're bulk unlocking
+  return { ...result, unviewedAchievements: [] };
 }
 
 /**

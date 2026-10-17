@@ -7,7 +7,12 @@ import {
   DEFAULT_ACHIEVEMENT_IMAGE,
   getAchievementImage,
 } from "@/data/achievement-images";
+import { challenges } from "@/data/challenges";
 import type { Challenge } from "@/data/types";
+
+const nameByAchievement = new Map(
+  challenges.map((c) => [c.achievement, c.name]),
+);
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -108,6 +113,14 @@ export function ChallengeCard({
           <p className="text-ror-text-muted text-[10px] leading-relaxed line-clamp-3 mb-2">
             {challenge.description}
           </p>
+
+          {challenge.prerequisite && (
+            <p className="text-ror-text-dim text-[9px] uppercase tracking-wider mb-2">
+              Requires:{" "}
+              {nameByAchievement.get(challenge.prerequisite) ??
+                challenge.prerequisite}
+            </p>
+          )}
 
           <div className="mt-auto flex flex-wrap gap-1">
             {/* Tags */}

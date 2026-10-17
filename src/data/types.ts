@@ -41,6 +41,8 @@ export interface Challenge {
   name: string;
   description: string;
   achievement: string; // Achievement ID used in save file
+  prerequisite?: string; // Achievement the game requires first (RegisterAchievement)
+  lunarCoins: number; // Lunar coins the game awards for this achievement
   unlocks: string[]; // What gets unlocked (survivors, skills, items, etc.)
   category: ChallengeCategory;
   survivor?: string; // Associated survivor ID (for skills/skins)
