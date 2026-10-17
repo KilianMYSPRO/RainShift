@@ -1,5 +1,5 @@
 import { challenges } from "@/data/challenges";
-import type { RawUserProfile, SaveData } from "@/data/types";
+import type { Challenge, RawUserProfile, SaveData } from "@/data/types";
 import {
   applySaveData,
   extractSaveData,
@@ -164,8 +164,17 @@ export function calculateSaveStats(saveData: SaveData): {
   unlockedSkins: number;
   unlockedItems: number;
   unlockedArtifacts: number;
+  totals: Record<Challenge["category"], number>;
 } {
   const unlockedSet = new Set(saveData.achievements);
+  const totals: Record<Challenge["category"], number> = {
+    survivors: 0,
+    skills: 0,
+    skins: 0,
+    items: 0,
+    artifacts: 0,
+  };
+  let unlockedKnown = 0;
 
   let survivors = 0;
   let skills = 0;
@@ -174,7 +183,9 @@ export function calculateSaveStats(saveData: SaveData): {
   let artifacts = 0;
 
   for (const challenge of challenges) {
+    totals[challenge.category]++;
     if (unlockedSet.has(challenge.achievement)) {
+      unlockedKnown++;
       switch (challenge.category) {
         case "survivors":
           survivors++;
@@ -197,11 +208,13 @@ export function calculateSaveStats(saveData: SaveData): {
 
   return {
     totalAchievements: challenges.length,
-    unlockedAchievements: saveData.achievements.length,
+    // Only count achievements the editor knows about, so value <= total
+    unlockedAchievements: unlockedKnown,
     unlockedSurvivors: survivors,
     unlockedSkills: skills,
     unlockedSkins: skins,
     unlockedItems: items,
     unlockedArtifacts: artifacts,
+    totals,
   };
 }

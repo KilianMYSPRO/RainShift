@@ -184,19 +184,19 @@ export function SaveEditor({
               <StatBar
                 label="SURVIVORS"
                 value={stats.unlockedSurvivors}
-                max={13}
+                max={stats.totals.survivors}
                 color="var(--ror-orange-accent)"
               />
               <StatBar
                 label="ITEMS"
                 value={stats.unlockedItems}
-                max={44}
+                max={stats.totals.items}
                 color="var(--ror-uncommon)"
               />
               <StatBar
                 label="SKINS"
                 value={stats.unlockedSkins}
-                max={42}
+                max={stats.totals.skins}
                 color="var(--ror-void)"
               />
             </div>
