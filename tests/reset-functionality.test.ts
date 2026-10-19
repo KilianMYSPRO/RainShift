@@ -72,7 +72,8 @@ describe("reset-functionality", () => {
 
     // Modified data should be different
     expect(modifiedData.coins).toBe(0);
-    expect(modifiedData.achievements).toEqual([]);
+    // Non-editor achievements are preserved by lockAll
+    expect(modifiedData.achievements).toEqual(["OriginalAch1", "OriginalAch2"]);
 
     // Reset by using original data
     const resetData = originalSaveData;

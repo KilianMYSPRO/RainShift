@@ -87,7 +87,7 @@ export default function Home() {
               System Status
             </div>
             <div className="text-xs text-ror-blue-accent font-mono">
-              {"ONLINE // V.1.0.1"}
+              {"ONLINE // V.1.1.0"}
             </div>
           </div>
         </div>
@@ -141,6 +141,7 @@ export default function Home() {
                       <ProtocolItem label="Void Contamination" code="SOTV" />
                       <ProtocolItem label="Storm Seekers" code="SOTS" />
                       <ProtocolItem label="Alloyed Integration" code="AC" />
+                      <ProtocolItem label="Hallowed Concepts" code="HC" />
                     </div>
                   </motion.div>
                 </div>

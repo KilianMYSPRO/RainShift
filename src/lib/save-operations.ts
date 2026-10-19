@@ -1,11 +1,13 @@
 import { challenges } from "@/data/challenges";
-import type { RawUserProfile, SaveData } from "@/data/types";
+import type { Challenge, RawUserProfile, SaveData } from "@/data/types";
 import {
   applySaveData,
   extractSaveData,
   parseXml,
   serializeXml,
 } from "./xml-parser";
+
+const INT32_MAX = 2147483647;
 
 /**
  * Load and parse a save file from XML string
@@ -39,49 +41,90 @@ export function isAchievementUnlocked(
   return saveData.achievements.includes(achievementId);
 }
 
+export interface UnlockOptions {
+  /** Add the lunar coins the game awards for each newly unlocked achievement */
+  awardCoins?: boolean;
+}
+
+const challengeByAchievement = new Map(
+  challenges.map((c) => [c.achievement, c]),
+);
+
 /**
- * Toggle an achievement (unlock or lock)
+ * Achievement plus every prerequisite it (transitively) requires in-game.
  */
-export function toggleAchievement(
+export function withPrerequisites(achievementId: string): string[] {
+  const chain: string[] = [];
+  let current: string | undefined = achievementId;
+  while (current && !chain.includes(current)) {
+    chain.push(current);
+    current = challengeByAchievement.get(current)?.prerequisite;
+  }
+  return chain;
+}
+
+/**
+ * Achievement plus every achievement that (transitively) requires it.
+ */
+export function withDependents(achievementId: string): string[] {
+  const result = new Set([achievementId]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const c of challenges) {
+      if (
+        c.prerequisite &&
+        result.has(c.prerequisite) &&
+        !result.has(c.achievement)
+      ) {
+        result.add(c.achievement);
+        grew = true;
+      }
+    }
+  }
+  return Array.from(result);
+}
+
+/**
+ * Lunar coins the game awards for the given achievements.
+ */
+export function lunarCoinsFor(achievementIds: Iterable<string>): number {
+  let total = 0;
+  for (const id of achievementIds) {
+    total += challengeByAchievement.get(id)?.lunarCoins ?? 0;
+  }
+  return total;
+}
+
+function grant(
   saveData: SaveData,
-  achievementId: string,
-  enabled: boolean,
+  ids: string[],
+  markUnviewed: boolean,
+  options: UnlockOptions,
 ): SaveData {
   const achievements = new Set(saveData.achievements);
   const unviewedAchievements = new Set(saveData.unviewedAchievements);
   const viewedUnlockables = new Set(saveData.viewedUnlockables);
   const unlocks = new Set(saveData.unlocks);
+  const added: string[] = [];
 
-  // Find the challenge data to get unlocks
-  const challenge = challenges.find((c) => c.achievement === achievementId);
-
-  if (enabled) {
-    // Add achievement
-    achievements.add(achievementId);
-    // Add to unviewed (game will show notification)
-    unviewedAchievements.add(achievementId);
-    // Add unlocks to viewed unlockables and actual unlocks
-    if (challenge) {
-      for (const unlock of challenge.unlocks) {
-        viewedUnlockables.add(unlock);
-        unlocks.add(unlock);
-      }
-    }
-  } else {
-    // Remove achievement
-    achievements.delete(achievementId);
-    unviewedAchievements.delete(achievementId);
-    // Remove from viewed unlockables and actual unlocks
-    if (challenge) {
-      for (const unlock of challenge.unlocks) {
-        viewedUnlockables.delete(unlock);
-        unlocks.delete(unlock);
-      }
+  for (const id of ids) {
+    if (!achievements.has(id)) added.push(id);
+    achievements.add(id);
+    if (markUnviewed) unviewedAchievements.add(id);
+    for (const unlock of challengeByAchievement.get(id)?.unlocks ?? []) {
+      viewedUnlockables.add(unlock);
+      unlocks.add(unlock);
     }
   }
 
+  const coins = options.awardCoins
+    ? Math.min(saveData.coins + lunarCoinsFor(added), INT32_MAX)
+    : saveData.coins;
+
   return {
     ...saveData,
+    coins,
     achievements: Array.from(achievements),
     unviewedAchievements: Array.from(unviewedAchievements),
     viewedUnlockables: Array.from(viewedUnlockables),
@@ -90,41 +133,74 @@ export function toggleAchievement(
 }
 
 /**
- * Unlock all achievements
+ * Toggle an achievement (unlock or lock).
+ * Unlocking also unlocks its prerequisites; locking also locks every
+ * achievement that depends on it, matching the game's rules.
  */
-export function unlockAll(saveData: SaveData): SaveData {
-  const achievements = new Set(saveData.achievements);
-  const viewedUnlockables = new Set(saveData.viewedUnlockables);
-  const unlocks = new Set(saveData.unlocks);
-
-  // Add all achievements and their unlocks
-  for (const challenge of challenges) {
-    achievements.add(challenge.achievement);
-    for (const unlock of challenge.unlocks) {
-      viewedUnlockables.add(unlock);
-      unlocks.add(unlock);
-    }
+export function toggleAchievement(
+  saveData: SaveData,
+  achievementId: string,
+  enabled: boolean,
+  options: UnlockOptions = {},
+): SaveData {
+  if (enabled) {
+    return grant(saveData, withPrerequisites(achievementId), true, options);
   }
 
+  const removed = new Set(withDependents(achievementId));
+  const removedUnlocks = new Set(
+    Array.from(removed).flatMap(
+      (id) => challengeByAchievement.get(id)?.unlocks ?? [],
+    ),
+  );
   return {
     ...saveData,
-    achievements: Array.from(achievements),
-    unviewedAchievements: [], // Clear unviewed since we're bulk unlocking
-    viewedUnlockables: Array.from(viewedUnlockables),
-    unlocks: Array.from(unlocks),
+    achievements: saveData.achievements.filter((a) => !removed.has(a)),
+    unviewedAchievements: saveData.unviewedAchievements.filter(
+      (a) => !removed.has(a),
+    ),
+    viewedUnlockables: saveData.viewedUnlockables.filter(
+      (u) => !removedUnlocks.has(u),
+    ),
+    unlocks: saveData.unlocks.filter((u) => !removedUnlocks.has(u)),
   };
 }
 
 /**
- * Lock all achievements (reset to default)
+ * Unlock all achievements
+ */
+export function unlockAll(
+  saveData: SaveData,
+  options: UnlockOptions = {},
+): SaveData {
+  const result = grant(
+    saveData,
+    challenges.map((c) => c.achievement),
+    false,
+    options,
+  );
+  // Clear unviewed since we're bulk unlocking
+  return { ...result, unviewedAchievements: [] };
+}
+
+/**
+ * Lock all achievements managed by the editor.
+ * Only removes achievements listed in the challenge data and the unlockables
+ * they grant; logbook entries, newt statues, stages and any other unlocks the
+ * game records on its own are preserved.
  */
 export function lockAll(saveData: SaveData): SaveData {
+  const managedAchievements = new Set(challenges.map((c) => c.achievement));
+  const managedUnlocks = new Set(challenges.flatMap((c) => c.unlocks));
+  const keepAchievement = (a: string) => !managedAchievements.has(a);
+  const keepUnlock = (u: string) => !managedUnlocks.has(u);
+
   return {
     ...saveData,
-    achievements: [],
-    unviewedAchievements: [],
-    viewedUnlockables: [],
-    unlocks: [],
+    achievements: saveData.achievements.filter(keepAchievement),
+    unviewedAchievements: saveData.unviewedAchievements.filter(keepAchievement),
+    viewedUnlockables: saveData.viewedUnlockables.filter(keepUnlock),
+    unlocks: saveData.unlocks.filter(keepUnlock),
   };
 }
 
@@ -164,8 +240,17 @@ export function calculateSaveStats(saveData: SaveData): {
   unlockedSkins: number;
   unlockedItems: number;
   unlockedArtifacts: number;
+  totals: Record<Challenge["category"], number>;
 } {
   const unlockedSet = new Set(saveData.achievements);
+  const totals: Record<Challenge["category"], number> = {
+    survivors: 0,
+    skills: 0,
+    skins: 0,
+    items: 0,
+    artifacts: 0,
+  };
+  let unlockedKnown = 0;
 
   let survivors = 0;
   let skills = 0;
@@ -174,7 +259,9 @@ export function calculateSaveStats(saveData: SaveData): {
   let artifacts = 0;
 
   for (const challenge of challenges) {
+    totals[challenge.category]++;
     if (unlockedSet.has(challenge.achievement)) {
+      unlockedKnown++;
       switch (challenge.category) {
         case "survivors":
           survivors++;
@@ -197,11 +284,13 @@ export function calculateSaveStats(saveData: SaveData): {
 
   return {
     totalAchievements: challenges.length,
-    unlockedAchievements: saveData.achievements.length,
+    // Only count achievements the editor knows about, so value <= total
+    unlockedAchievements: unlockedKnown,
     unlockedSurvivors: survivors,
     unlockedSkills: skills,
     unlockedSkins: skins,
     unlockedItems: items,
     unlockedArtifacts: artifacts,
+    totals,
   };
 }
