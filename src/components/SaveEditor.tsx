@@ -349,7 +349,8 @@ export function SaveEditor({
                   : DLC_NAMES[dlc]
                       .replace("Survivors of the Void", "SOTV")
                       .replace("Seekers of the Storm", "SOTS")
-                      .replace("Alloyed Collective", "AC")}
+                      .replace("Alloyed Collective", "AC")
+                      .replace("Hallowed Concepts", "HC")}
               </button>
             ))}
           </div>
