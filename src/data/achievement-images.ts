@@ -2,7 +2,7 @@
 // Images sourced from Steam Community: https://steamcommunity.com/stats/632360/achievements
 
 const STEAM_CDN_BASE =
-  "https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/632360";
+  "https://shared.fastly.steamstatic.com/community_assets/images/apps/632360";
 
 export const achievementImages: Record<string, string> = {
   // ============================================
@@ -179,7 +179,7 @@ export const achievementImages: Record<string, string> = {
   // OPERATOR SKILLS (AC)
   // ============================================
   DroneTechUniqueDrones: `${STEAM_CDN_BASE}/fa4e66b02e4a5fc34fd3282fb2e6b9727722e2b0.jpg`, // Putting Together a Team
-  DroneTechTrickshot: `${STEAM_CDN_BASE}/5a7335da8ee57fcfe6bac947124731ed0e919d6b.jpg`, // That All You Got?
+  DroneTechTrickshot: `${STEAM_CDN_BASE}/1bb734b98375399d214d452076c43cdfbb6c7659.jpg`, // That All You Got?
   DroneTechDefeatVultureBossWhileAirborne: `${STEAM_CDN_BASE}/fca973b6eb46b770160eebee59d7381a6d7ef913.jpg`, // Not So Different
   DroneTechJuggleLemurian: `${STEAM_CDN_BASE}/321298f4483dfe4fa064f6df91a0fd7ff638f0c5.jpg`, // That Just Happened
 
@@ -250,7 +250,49 @@ export const achievementImages: Record<string, string> = {
   MageDecompile: `${STEAM_CDN_BASE}/55c323f6c11b17d591469ba979f9ca3cab1d55fd.jpg`, // Artificer: Accept and Decompile
   LoaderDecompile: `${STEAM_CDN_BASE}/d48708af28e6546e8bf0fe3beafbff5668228d65.jpg`, // Loader: Accept and Decompile
   CaptainDecompile: `${STEAM_CDN_BASE}/06cc46f4db2e15ff344afb74cb8cd40d5cf9d201.jpg`, // Captain: Accept and Decompile
-  TreebotDecompile: `${STEAM_CDN_BASE}/d48708af28e6546e8bf0fe3beafbff5668228d65.jpg`, // Rex: Accept and Decompile
+  TreebotDecompile: `${STEAM_CDN_BASE}/f138dd733cf52a79ebb49f6eee458198a41690c8.jpg`, // Rex: Accept and Decompile
+
+  // ============================================
+  // HALLOWED CONCEPTS - SURVIVORS & SKILLS (HC)
+  // ============================================
+  ChampRushRitualCompleted: `${STEAM_CDN_BASE}/526627dff17ca6dad9f0cc375b9b758feb83163e.jpg`, // A Broken Ritual
+  AcolyteJuggleLemurian: `${STEAM_CDN_BASE}/8d719247cdf84f4a70602e9bee5eaff6a9f34ce9.jpg`, // Acolyte: Not Even Close
+  AcolyteReaperMultiKill: `${STEAM_CDN_BASE}/58678da03ddf4477f2669dd20d849094a1b23e4d.jpg`, // Acolyte: Bloodbath
+  AcolyteUniqueSacrifices: `${STEAM_CDN_BASE}/29e12193187aeda80e7549c95228ba33de86d5e3.jpg`, // Acolyte: Hit List
+  CommandoBeatBrotherMaxKarma: `${STEAM_CDN_BASE}/18c3ce517c0e002b89e363c3de4517715dc22469.jpg`, // Commando: Retribution
+  CrocoClearGameRestack: `${STEAM_CDN_BASE}/5a1f1dbb282cbd21057713a0f75d376c0cb2c1e1.jpg`, // Acrid: Miracle
+  Enforcer2BlockXTeleporter: `${STEAM_CDN_BASE}/61109d38938b67f3c42c8330bd28ae77cf6ec9b0.jpg`, // Enforcer: Safe and Sound
+  Enforcer2ParryVagrant: `${STEAM_CDN_BASE}/a6bde7c19f7c0585c3516bd6ab9428ea6e3f2fd2.jpg`, // Enforcer: +PARRY
+  Enforcer2RepeatedlyDamageMagmaWorm: `${STEAM_CDN_BASE}/f34d5cd2f7706e5bfa7cc8604433b330f72485aa.jpg`, // Enforcer: Burning Lead
+  Enforcer2TankTitanLaser: `${STEAM_CDN_BASE}/0e946b155c285cbc55e728e1538a49dac2b00894.jpg`, // Enforcer: Indomitable
+  EngiBatteryDrone: `${STEAM_CDN_BASE}/8fc3f8e79695817420a0c3e700596c591fe09103.jpg`, // Engineer: Mad Scientist
+  HuntressCollectArtifact: `${STEAM_CDN_BASE}/a6e5dd2628e783dc4c5c92580e2889e0b786c324.jpg`, // Huntress: Tomb Raider
+  MagePillarSkip: `${STEAM_CDN_BASE}/854a033dfa24b7c8c0e04e262e1ddce5193a4319.jpg`, // Artificer: One Giant Leap
+  TreebotClearGameWithLunars: `${STEAM_CDN_BASE}/9890f3b02d5519942a2c6dac67c99738a2c9dd13.jpg`, // REX: Invasive Growth
+
+  // ============================================
+  // HALLOWED CONCEPTS - SKINS (HC)
+  // ============================================
+  AcolyteClearGameMonsoon: `${STEAM_CDN_BASE}/c277a74de51900364c1dd8bfce8c57cd207d90e5.jpg`, // Acolyte: Mastery
+  AcolyteClearUltima: `${STEAM_CDN_BASE}/7c301bff203606c1335d26d2adf810a8ff3c38b6.jpg`, // Acolyte: Memento Mori
+  Bandit2ClearUltima: `${STEAM_CDN_BASE}/4b8f3bd10ae377118d9fbbf1a8154f405b64c735.jpg`, // Bandit: Memento Mori
+  CaptainClearUltima: `${STEAM_CDN_BASE}/b0a1830bf6e2e0f92ca51a99c05226d91e659adb.jpg`, // Captain: Memento Mori
+  ChefClearChampRush: `${STEAM_CDN_BASE}/86a0a04f0a674778ac6d8e13b8a6fc9985817faa.jpg`, // CHEF: Dying to Meet You
+  CommandoClearChampRush: `${STEAM_CDN_BASE}/65b5a79c3f55c0e0bcf7caf91176ced96be9d578.jpg`, // Commando: Dying to Meet You
+  CrocoClearChampRush: `${STEAM_CDN_BASE}/1163394028b9a14e231d978f741e4daafa7a5f04.jpg`, // Acrid: Dying to Meet You
+  Enforcer2ClearChampRush: `${STEAM_CDN_BASE}/7a8b646e0bdd83f43fbc3a4ff8df67f1b2bbde59.jpg`, // Enforcer: Dying to Meet You
+  Enforcer2ClearGameMonsoon: `${STEAM_CDN_BASE}/3410c47f884698c4a0537727a0d8300dda4e1eef.jpg`, // Enforcer: Mastery
+  EngiClearUltima: `${STEAM_CDN_BASE}/e273383a28195e1e6637f6206e2933709f0d1522.jpg`, // Engineer: Memento Mori
+  FalseSonClearGameHexes: `${STEAM_CDN_BASE}/c8ee4d741c46de813e716ec29a87e123975edf53.jpg`, // False Son: Against All Odds
+  HuntressClearChampRush: `${STEAM_CDN_BASE}/f9f7c86ee51369eb0c52ee40ee7b55d5d8fd5db4.jpg`, // Huntress: Dying to Meet You
+  LoaderClearGameHexes: `${STEAM_CDN_BASE}/a0cc0ab39908e4613629faa17b8d8d215b830578.jpg`, // Loader: Against All Odds
+  MageClearUltima: `${STEAM_CDN_BASE}/040d2d73dd453d5a3201f016318aa0a1c8b3e1ed.jpg`, // Artificer: Memento Mori
+  MercClearGameHexes: `${STEAM_CDN_BASE}/37ccaca7bfc4d76425633b67e4ca53875d8b16e2.jpg`, // Mercenary: Against All Odds
+  RailgunnerClearGameHexes: `${STEAM_CDN_BASE}/1403326928103a9d15e86e0f81f33ce11d1fa807.jpg`, // Railgunner: Against All Odds
+  SeekerClearChampRush: `${STEAM_CDN_BASE}/0f3a8354c1a9e4febff06993967471ca0d1f3164.jpg`, // Seeker: Dying to Meet You
+  ToolbotClearGameHexes: `${STEAM_CDN_BASE}/5037fcaa1bee83d9cabb2339ca7a267ac7e49860.jpg`, // MUL-T: Against All Odds
+  TreebotClearUltima: `${STEAM_CDN_BASE}/b9def0fcf4777fbf283c941c1b5de19e0c570a7f.jpg`, // REX: Memento Mori
+  VoidSurvivorClearGameHexes: `${STEAM_CDN_BASE}/71a58d9aa2632efd48cb254ac944fe5705721ae9.jpg`, // ?V??oid Fiend?: Against All Odds
 
   // ============================================
   // ARTIFACTS (Base Game)
